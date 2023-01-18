@@ -2,6 +2,7 @@ using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
 using LetterboxNetCore.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace LetterboxNetCore.Repositories
 {
@@ -21,14 +22,15 @@ namespace LetterboxNetCore.Repositories
             return await _userManager.CreateAsync(user, password);
         }
 
-        public Task<bool> ExistsByEmailOrUsername(string emailOrUsername)
+        public async Task<bool> ExistsByEmailOrUsername(string emailOrUsername)
         {
-            throw new NotImplementedException();
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.UserName == emailOrUsername) != null;
         }
 
-        public Task<User?> FindByEmailOrUsername(string emailOrUsername)
+        public async Task<User?> FindByEmailOrUsername(string emailOrUsername)
         {
-            throw new NotImplementedException();
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.UserName == emailOrUsername);
         }
     }
 }
