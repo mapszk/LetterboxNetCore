@@ -8,11 +8,13 @@ namespace LetterboxNetCore.Repositories.Database
     {
         private readonly ApplicationDbContext context;
         public UserRepository UserRepository { get; private set; }
+        public MovieRepository MoviesRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context, UserManager<User> userManager)
         {
             this.context = context;
             this.UserRepository = new UserRepository(this.context, userManager);
+            this.MoviesRepository = new MovieRepository(this.context);
         }
 
         public async Task SaveAsync()

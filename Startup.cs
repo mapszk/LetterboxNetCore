@@ -39,7 +39,7 @@ public class Startup
                 ValidateAudience = false,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["JwtKey"])),
+                IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["Jwt:Key"])),
                 ClockSkew = TimeSpan.Zero
             });
         services.AddScoped<UnitOfWork, UnitOfWork>();

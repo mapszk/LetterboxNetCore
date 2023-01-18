@@ -74,11 +74,11 @@ namespace LetterboxNetCore.Controllers
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Email, user.Email)
             };
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["JwtKey"]));
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddDays(Convert.ToInt32(configuration["JwtTokenExpireDays"])),
+                expires: DateTime.Now.AddDays(Convert.ToInt32(configuration["Jwt:TokenExpireDays"])),
                 signingCredentials: creds
             );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
