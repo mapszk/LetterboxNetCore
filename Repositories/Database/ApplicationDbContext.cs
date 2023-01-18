@@ -15,5 +15,7 @@ namespace LetterboxNetCore.Repositories.Database
         {
             base.OnModelCreating(builder);
         }
+
+        public DbSet<Movie> Movies { get; set; }
     }
 }

@@ -9,6 +9,8 @@ namespace LetterboxNetCore.Utils
         public AutoMapperProfiles()
         {
             CreateMap<UserRegisterDTO, User>();
+
+            CreateMap<CreateMovieDTO, Movie>();
         }
     }
 }

@@ -4,7 +4,7 @@ namespace LetterboxNetCore.Repositories.Interfaces
 {
     public interface IRepository<T> where T : BaseEntity
     {
-        Task<T> Get(int id);
+        Task<T?> Get(int id);
         Task<IEnumerable<T>> GetAll();
         void Add(T entity);
         void Delete(T entity);
