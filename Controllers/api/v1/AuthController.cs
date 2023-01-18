@@ -1,9 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AutoMapper;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LetterboxNetCore.Controllers
 {
@@ -14,12 +17,22 @@ namespace LetterboxNetCore.Controllers
         private readonly UnitOfWork unitOfWork;
         private readonly UserManager<User> userManager;
         private readonly IMapper mapper;
+        private readonly IConfiguration configuration;
+        private readonly SignInManager<User> signInManager;
 
-        public AuthController(UnitOfWork unitOfWork, UserManager<User> userManager, IMapper mapper)
+        public AuthController(
+            UnitOfWork unitOfWork,
+            UserManager<User> userManager,
+            IMapper mapper,
+            IConfiguration configuration,
+            SignInManager<User> signInManager
+        )
         {
             this.unitOfWork = unitOfWork;
             this.userManager = userManager;
             this.mapper = mapper;
+            this.configuration = configuration;
+            this.signInManager = signInManager;
         }
 
         [HttpPost("signUp")]
@@ -34,6 +47,42 @@ namespace LetterboxNetCore.Controllers
                 return Ok();
             else
                 return BadRequest(result.Errors);
+        }
+
+        [HttpPost("signIn")]
+        public async Task<ActionResult<string>> SignIn([FromBody] UserLoginDTO userLoginDTO)
+        {
+            User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userLoginDTO.UserName);
+            if (user == null)
+                return BadRequest("User doesn't exists");
+            var result = await signInManager.PasswordSignInAsync(user, userLoginDTO.Password, false, false);
+            if (result.Succeeded)
+            {
+                string token = CreateToken(user);
+                return Ok(token);
+            }
+            else
+            {
+                return BadRequest("Wrong password");
+            }
+        }
+
+        private string CreateToken(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["JwtKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(Convert.ToInt32(configuration["JwtTokenExpireDays"])),
+                signingCredentials: creds
+            );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            return jwt;
         }
     }
 }
