@@ -1,6 +1,12 @@
+using LetterboxNetCore.Models;
+using LetterboxNetCore.Repositories.Database;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+
 public class Startup
 {
-    private readonly object configuration;
+    private readonly IConfiguration configuration;
 
     public Startup(IConfiguration configuration)
     {
@@ -10,9 +16,50 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers();
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(configuration["DatabaseURL"]));
+        services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+                options.User.RequireUniqueEmail = true;
+                // options.SignIn.RequireConfirmedEmail = true;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+        services.AddAuthentication();
+        services.AddScoped<UnitOfWork, UnitOfWork>();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(option =>
+        {
+            option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter a valid token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+            option.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[]{}
+                }
+            });
+        });
     }
 
     public void Configure(WebApplication app, IHostEnvironment env)
@@ -26,7 +73,7 @@ public class Startup
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
+        app.UseAuthentication();
         app.MapControllers();
     }
 }
