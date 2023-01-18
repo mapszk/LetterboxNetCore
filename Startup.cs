@@ -34,6 +34,7 @@ public class Startup
         services.AddScoped<UnitOfWork, UnitOfWork>();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
+        services.AddAutoMapper(typeof(Startup));
         services.AddSwaggerGen(option =>
         {
             option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
