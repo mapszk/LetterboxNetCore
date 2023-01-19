@@ -12,6 +12,9 @@ namespace LetterboxNetCore.Utils
 
             CreateMap<CreateMovieDTO, Movie>();
             CreateMap<Movie, MovieDTO>();
+
+            CreateMap<CreateReviewDTO, Review>();
+            CreateMap<Review, ReviewDTO>();
         }
     }
 }
