@@ -38,6 +38,7 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<MovieDTO>> Create([FromBody] CreateMovieDTO createMovieDTO)
         {
             var movie = mapper.Map<Movie>(createMovieDTO);
+            movie.Slug = await GenerateSlugAsync(createMovieDTO.Name, createMovieDTO.ReleaseYear, createMovieDTO.Director);
             unitOfWork.MoviesRepository.Add(movie);
             await unitOfWork.SaveAsync();
             var created = mapper.Map<MovieDTO>(movie);
@@ -45,7 +46,7 @@ namespace LetterboxNetCore.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<MovieDTO>> Update([FromRoute] int id, [FromBody] CreateMovieDTO updateMovieDTO)
+        public async Task<ActionResult<MovieDTO>> Update([FromRoute] int id, [FromBody] UpdateMovieDTO updateMovieDTO)
         {
             var movie = await unitOfWork.MoviesRepository.Get(id);
             if (movie == null)
@@ -65,6 +66,25 @@ namespace LetterboxNetCore.Controllers
             unitOfWork.MoviesRepository.Delete(movie);
             await unitOfWork.SaveAsync();
             return NoContent();
+        }
+
+        private async Task<string> GenerateSlugAsync(string movieName, int releaseYear, string director)
+        {
+            string generatedSlug = movieName.ToLower().Replace(" ", "-");
+            bool exists = await SlugExists(generatedSlug);
+            if (!exists)
+                return generatedSlug;
+            generatedSlug = String.Concat(generatedSlug, $"-{Convert.ToString(releaseYear)}");
+            exists = await SlugExists(generatedSlug);
+            if (!exists)
+                return generatedSlug;
+            else
+                return String.Concat(generatedSlug, $"-{director.ToLower().Replace(" ", "-")}");
+        }
+
+        private async Task<bool> SlugExists(string slug)
+        {
+            return await unitOfWork.MoviesRepository.ExistsBySlug(slug);
         }
     }
 }
