@@ -9,5 +9,6 @@ namespace LetterboxNetCore.Models
         public string? Cover { get; set; }
         public string? Director { get; set; }
         public List<Review>? Reviews { get; set; }
+        public List<MovieLike>? Likes { get; set; }
     }
 }

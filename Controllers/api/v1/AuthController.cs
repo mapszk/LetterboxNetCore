@@ -35,7 +35,7 @@ namespace LetterboxNetCore.Controllers
             this.signInManager = signInManager;
         }
 
-        [HttpPost("signUp")]
+        [HttpPost("sign-up")]
         public async Task<ActionResult> SignUp([FromBody] UserRegisterDTO userRegisterDTO)
         {
             bool userNameExists = await unitOfWork.UserRepository.ExistsByEmailOrUsername(userRegisterDTO.UserName);
@@ -49,7 +49,7 @@ namespace LetterboxNetCore.Controllers
                 return BadRequest(result.Errors);
         }
 
-        [HttpPost("signIn")]
+        [HttpPost("sign-in")]
         public async Task<ActionResult<string>> SignIn([FromBody] UserLoginDTO userLoginDTO)
         {
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userLoginDTO.UserName);

@@ -38,12 +38,12 @@ namespace LetterboxNetCore.Controllers
             return Ok(mappedMovie);
         }
 
-        [HttpPost("{movieId}/review")]
-        public async Task<ActionResult<ReviewDTO>> CreateReview([FromRoute] int movieId, [FromBody] CreateReviewDTO createReviewDTO)
+        [HttpPost("{movieSlug}/review")]
+        public async Task<ActionResult<ReviewDTO>> CreateReview([FromRoute] string movieSlug, [FromBody] CreateReviewDTO createReviewDTO)
         {
-            var movie = await unitOfWork.MoviesRepository.Get(movieId);
+            var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return BadRequest($"Movie with id {movieId} doesn't exists");
+                return BadRequest("Movie doesn't exists");
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             var review = mapper.Map<Review>(createReviewDTO);
@@ -55,18 +55,49 @@ namespace LetterboxNetCore.Controllers
             return Ok(mappedReview);
         }
 
-        [HttpGet("{movieId}/review/{reviewId}")]
-        public async Task<ActionResult<ReviewDTO>> GetReviewById([FromRoute] int movieId, [FromRoute] int reviewId)
+        [HttpGet("{movieSlug}/review/{reviewId}")]
+        public async Task<ActionResult<ReviewDTO>> GetReviewById([FromRoute] string movieSlug, [FromRoute] int reviewId)
         {
-            var movie = await unitOfWork.MoviesRepository.Get(movieId);
+            var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return NotFound($"Movie with id {movieId} doesn't exists");
+                return NotFound("Movie doesn't exists");
             var review = await unitOfWork.ReviewsRepository.Get(reviewId);
             if (review == null)
-                return NotFound($"Review with id {reviewId} doesn't exists");
+                return NotFound("Review doesn't exists");
             var mappedReview = mapper.Map<ReviewDTO>(review);
             return Ok(mappedReview);
         }
 
+        [HttpPost("{movieSlug}/like")]
+        public async Task<ActionResult> LikeMovie([FromRoute] string movieSlug)
+        {
+            string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
+            Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
+            if (movie == null)
+                return NotFound("Movie doesn't exists");
+            var movieLike = new MovieLike();
+            movieLike.UserId = user.Id;
+            movieLike.MovieId = movie.Id;
+            unitOfWork.MovieLikesRepository.Add(movieLike);
+            await unitOfWork.SaveAsync();
+            return Ok();
+        }
+
+        [HttpPost("{movieSlug}/remove-like")]
+        public async Task<ActionResult> RemoveLike([FromRoute] string movieSlug)
+        {
+            string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
+            Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
+            if (movie == null)
+                return NotFound("Movie doesn't exists");
+            var movieLike = await unitOfWork.MovieLikesRepository.GetLikeFromUserByMovieId(user.Id, movie.Id);
+            if (movieLike == null)
+                return NotFound();
+            unitOfWork.MovieLikesRepository.Delete(movieLike);
+            await unitOfWork.SaveAsync();
+            return Ok();
+        }
     }
 }
