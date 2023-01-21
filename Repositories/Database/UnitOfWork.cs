@@ -11,6 +11,7 @@ namespace LetterboxNetCore.Repositories.Database
         public MovieRepository MoviesRepository { get; private set; }
         public ReviewRepository ReviewsRepository { get; private set; }
         public MovieLikeRepository MovieLikesRepository { get; private set; }
+        public MovieWatchlistRepository MovieWatchlistRepository { get; private set; }
 
         public UnitOfWork(ApplicationDbContext context, UserManager<User> userManager)
         {
@@ -19,6 +20,7 @@ namespace LetterboxNetCore.Repositories.Database
             this.MoviesRepository = new MovieRepository(this.context);
             this.ReviewsRepository = new ReviewRepository(this.context);
             this.MovieLikesRepository = new MovieLikeRepository(this.context);
+            this.MovieWatchlistRepository = new MovieWatchlistRepository(this.context);
         }
 
         public async Task SaveAsync()

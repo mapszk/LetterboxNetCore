@@ -99,5 +99,37 @@ namespace LetterboxNetCore.Controllers
             await unitOfWork.SaveAsync();
             return Ok();
         }
+
+        [HttpPost("{movieSlug}/add-to-watchlist")]
+        public async Task<ActionResult> AddToWatchlist([FromRoute] string movieSlug)
+        {
+            string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
+            Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
+            if (movie == null)
+                return NotFound("Movie doesn't exists");
+            var movieWatchlist = new MovieWatchlist();
+            movieWatchlist.UserId = user.Id;
+            movieWatchlist.MovieId = movie.Id;
+            unitOfWork.MovieWatchlistRepository.Add(movieWatchlist);
+            await unitOfWork.SaveAsync();
+            return Ok();
+        }
+
+        [HttpPost("{movieSlug}/remove-from-watchlist")]
+        public async Task<ActionResult> RemoveFromWatchlist([FromRoute] string movieSlug)
+        {
+            string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
+            Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
+            if (movie == null)
+                return NotFound("Movie doesn't exists");
+            var movieWatchlist = await unitOfWork.MovieWatchlistRepository.GetMovieFromUserByMovieId(user.Id, movie.Id);
+            if (movieWatchlist == null)
+                return NotFound();
+            unitOfWork.MovieWatchlistRepository.Delete(movieWatchlist);
+            await unitOfWork.SaveAsync();
+            return Ok();
+        }
     }
 }

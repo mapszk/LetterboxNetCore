@@ -6,5 +6,6 @@ namespace LetterboxNetCore.Models
     {
         public List<Review>? Reviews { get; set; }
         public List<MovieLike>? MovieLikes { get; set; }
+        public List<MovieWatchlist>? MovieWatchlist { get; set; }
     }
 }
