@@ -19,5 +19,19 @@ namespace LetterboxNetCore.Repositories
                 .Include(r => r.Movie)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
+
+        public async Task<(List<Review>, int)> GetAllPaginated(int movieId, string content, int pageSize, int pageNumber)
+        {
+            var search = context.Reviews
+                .Where(r => r.MovieId == movieId)
+                .Where(r => String.IsNullOrEmpty(content) || r.Content.ToLower().Contains(content.ToLower()))
+                .Include(r => r.User)
+                .Include(r => r.Movie);
+            var result = await search
+                .Skip(pageNumber * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return (result, search.Count());
+        }
     }
 }
