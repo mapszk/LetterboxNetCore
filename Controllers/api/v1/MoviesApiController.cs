@@ -15,6 +15,8 @@ namespace LetterboxNetCore.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class MoviesApiController : ControllerBase
     {
+        private const int DefaultPageSize = 10;
+        private const int DefaultPageNumber = 0;
         private readonly UnitOfWork unitOfWork;
         private readonly UserManager<User> userManager;
         private readonly IMapper mapper;
@@ -36,6 +38,24 @@ namespace LetterboxNetCore.Controllers
                 return NotFound();
             var mappedMovie = mapper.Map<MovieDetailsDTO>(movie);
             return Ok(mappedMovie);
+        }
+
+        [HttpGet("get-all-paginated")]
+        public async Task<ActionResult<PaginationDTO<MovieDTO>>> GetAllPaginated(
+            [FromQuery] string? name,
+            [FromQuery] int pageSize = DefaultPageSize,
+            [FromQuery] int pageNumber = DefaultPageNumber
+        )
+        {
+            var search = await unitOfWork.MoviesRepository.GetAllPaginated(name, pageNumber, pageSize);
+            var mappedMovies = mapper.Map<List<MovieDTO>>(search.Item1);
+            var result = new PaginationDTO<MovieDTO>
+            (
+                mappedMovies,
+                search.Item2,
+                Convert.ToInt32(Math.Ceiling((double)search.Item2 / (double)pageSize))
+            );
+            return Ok(result);
         }
 
         [HttpPost("{movieSlug}/review")]
