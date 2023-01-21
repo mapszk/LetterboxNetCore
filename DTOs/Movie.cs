@@ -45,4 +45,11 @@ namespace LetterboxNetCore.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
+
+    public class MovieDetailsDTO : MovieDTO
+    {
+        public int Likes { get; set; }
+        public int Watchlist { get; set; }
+        public int Reviews { get; set; }
+    }
 }

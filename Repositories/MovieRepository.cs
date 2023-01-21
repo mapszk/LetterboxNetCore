@@ -22,5 +22,14 @@ namespace LetterboxNetCore.Repositories
         {
             return await context.Movies.FirstOrDefaultAsync(m => m.Slug == slug);
         }
+
+        public async Task<Movie?> GetMovieDetailsBySlug(string slug)
+        {
+            return await context.Movies
+                .Include(m => m.MovieWatchlist)
+                .Include(m => m.Reviews)
+                .Include(m => m.Likes)
+                .FirstOrDefaultAsync(m => m.Slug == slug);
+        }
     }
 }

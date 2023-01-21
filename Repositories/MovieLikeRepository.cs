@@ -16,5 +16,10 @@ namespace LetterboxNetCore.Repositories
         {
             return await context.MovieLikes.FirstOrDefaultAsync(l => l.MovieId == movieId && l.UserId == userId);
         }
+
+        public async Task<bool> LikeExists(string userId, int movieId)
+        {
+            return await context.MovieLikes.FirstOrDefaultAsync(l => l.MovieId == movieId && l.UserId == userId) != null;
+        }
     }
 }

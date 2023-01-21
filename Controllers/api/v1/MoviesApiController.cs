@@ -29,12 +29,12 @@ namespace LetterboxNetCore.Controllers
         }
 
         [HttpGet("{slug}")]
-        public async Task<ActionResult<MovieDTO>> GetById([FromRoute] string slug)
+        public async Task<ActionResult<MovieDetailsDTO>> GetById([FromRoute] string slug)
         {
-            var movie = await unitOfWork.MoviesRepository.GetBySlug(slug);
+            var movie = await unitOfWork.MoviesRepository.GetMovieDetailsBySlug(slug);
             if (movie == null)
                 return NotFound();
-            var mappedMovie = mapper.Map<MovieDTO>(movie);
+            var mappedMovie = mapper.Map<MovieDetailsDTO>(movie);
             return Ok(mappedMovie);
         }
 
@@ -61,7 +61,7 @@ namespace LetterboxNetCore.Controllers
             var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
                 return NotFound("Movie doesn't exists");
-            var review = await unitOfWork.ReviewsRepository.Get(reviewId);
+            var review = await unitOfWork.ReviewsRepository.GetReviewDetails(reviewId);
             if (review == null)
                 return NotFound("Review doesn't exists");
             var mappedReview = mapper.Map<ReviewDTO>(review);
@@ -76,6 +76,9 @@ namespace LetterboxNetCore.Controllers
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
                 return NotFound("Movie doesn't exists");
+            var likeExists = await unitOfWork.MovieLikesRepository.LikeExists(user.Id, movie.Id);
+            if (likeExists)
+                return BadRequest("Movie is already liked");
             var movieLike = new MovieLike();
             movieLike.UserId = user.Id;
             movieLike.MovieId = movie.Id;
@@ -108,6 +111,9 @@ namespace LetterboxNetCore.Controllers
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
                 return NotFound("Movie doesn't exists");
+            bool isInWatchlist = await unitOfWork.MovieWatchlistRepository.MovieExistsInWatchlist(user.Id, movie.Id);
+            if (isInWatchlist)
+                return BadRequest("Movie is already in watchlist");
             var movieWatchlist = new MovieWatchlist();
             movieWatchlist.UserId = user.Id;
             movieWatchlist.MovieId = movie.Id;
