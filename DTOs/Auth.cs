@@ -19,4 +19,14 @@ namespace LetterboxNetCore.DTOs
         [Required(ErrorMessage = "Password is required")]
         public string? Password { get; set; }
     }
+
+    public class LoggedUser
+    {
+        public string? Token { get; set; }
+
+        public LoggedUser(string token)
+        {
+            this.Token = token;
+        }
+    }
 }

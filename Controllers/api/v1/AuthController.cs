@@ -67,7 +67,8 @@ namespace LetterboxNetCore.Controllers
             if (result.Succeeded)
             {
                 string token = CreateToken(user);
-                return Ok(token);
+                var loggedUser = new LoggedUser(token);
+                return Ok(loggedUser);
             }
             else
                 return BadRequest(new ProblemDetails
