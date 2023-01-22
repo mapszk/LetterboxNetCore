@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 public class Startup
 {
     private readonly IConfiguration configuration;
+    private const string CorsPolicy = "LetterboxNetCoreCors";
 
     public Startup(IConfiguration configuration)
     {
@@ -20,7 +21,7 @@ public class Startup
         services.AddControllers();
         services.AddCors(options =>
         {
-            options.AddPolicy("corsapp", policy =>
+            options.AddPolicy(CorsPolicy, policy =>
                 {
                     policy.WithOrigins("http://localhost:3000")
                         .AllowAnyHeader()
@@ -90,7 +91,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.UseCors("corsapp");
+        app.UseCors(CorsPolicy);
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.UseAuthentication();
