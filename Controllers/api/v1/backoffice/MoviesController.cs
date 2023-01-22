@@ -72,6 +72,12 @@ namespace LetterboxNetCore.Controllers
             var movie = await unitOfWork.MoviesRepository.Get(id);
             if (movie == null)
                 return NotFound();
+            if (movie.Id != id)
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Bad request",
+                    Detail = "Invalid movie id"
+                });
             movie.Update(updateMovieDTO);
             await unitOfWork.SaveAsync();
             var updated = new MovieDTO(movie);

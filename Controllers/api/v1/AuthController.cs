@@ -36,13 +36,21 @@ namespace LetterboxNetCore.Controllers
         {
             bool userNameExists = await unitOfWork.UserRepository.ExistsByEmailOrUsername(userRegisterDTO.UserName);
             if (userNameExists)
-                return BadRequest($"A user with username '{userRegisterDTO.UserName}' already exists");
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid credentials",
+                    Detail = "Username already exists"
+                });
             var user = new User(userRegisterDTO);
             var result = await unitOfWork.UserRepository.CreateUser(user, userRegisterDTO.Password);
             if (result.Succeeded)
                 return Ok();
             else
-                return BadRequest(result.Errors);
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid credentials",
+                    Detail = result.Errors.First().Description
+                });
         }
 
         [HttpPost("sign-in")]
@@ -50,7 +58,11 @@ namespace LetterboxNetCore.Controllers
         {
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userLoginDTO.UserName);
             if (user == null)
-                return BadRequest("User doesn't exists");
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid credentials",
+                    Detail = "User doesn't exists"
+                });
             var result = await signInManager.PasswordSignInAsync(user, userLoginDTO.Password, false, false);
             if (result.Succeeded)
             {
@@ -58,9 +70,11 @@ namespace LetterboxNetCore.Controllers
                 return Ok(token);
             }
             else
-            {
-                return BadRequest("Wrong password");
-            }
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Invalid credentials",
+                    Detail = "Wrong password"
+                });
         }
 
         private string CreateToken(User user)

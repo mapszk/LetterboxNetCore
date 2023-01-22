@@ -1,3 +1,4 @@
+using Hellang.Middleware.ProblemDetails;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,6 +20,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers();
+        services.AddProblemDetails();
         services.AddCors(options =>
         {
             options.AddPolicy(CorsPolicy, policy =>
@@ -91,6 +93,7 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        app.UseProblemDetails();
         app.UseCors(CorsPolicy);
         app.UseHttpsRedirection();
         app.UseAuthorization();

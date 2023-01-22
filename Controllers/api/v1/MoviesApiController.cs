@@ -64,7 +64,11 @@ namespace LetterboxNetCore.Controllers
         {
             var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return BadRequest("Movie doesn't exists");
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Bad request",
+                    Detail = "Movie doesn't exists"
+                });
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             var review = new Review(createReviewDTO);
@@ -81,10 +85,18 @@ namespace LetterboxNetCore.Controllers
         {
             var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return NotFound("Movie doesn't exists");
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Not found",
+                    Detail = "Movie doesn't exists"
+                });
             var review = await unitOfWork.ReviewsRepository.GetReviewDetails(reviewId);
             if (review == null)
-                return NotFound("Review doesn't exists");
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Not found",
+                    Detail = "Review doesn't exists"
+                });
             var mappedReview = new ReviewDTO(review);
             return Ok(mappedReview);
         }
@@ -96,10 +108,18 @@ namespace LetterboxNetCore.Controllers
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return NotFound("Movie doesn't exists");
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Not found",
+                    Detail = "Movie doesn't exists"
+                });
             var likeExists = await unitOfWork.MovieLikesRepository.LikeExists(user.Id, movie.Id);
             if (likeExists)
-                return BadRequest("Movie is already liked");
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Bad request",
+                    Detail = "Movie is already liked"
+                });
             var movieLike = new MovieLike();
             movieLike.UserId = user.Id;
             movieLike.MovieId = movie.Id;
@@ -115,7 +135,11 @@ namespace LetterboxNetCore.Controllers
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return NotFound("Movie doesn't exists");
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Not found",
+                    Detail = "Movie doesn't exists"
+                });
             var movieLike = await unitOfWork.MovieLikesRepository.GetLikeFromUserByMovieId(user.Id, movie.Id);
             if (movieLike == null)
                 return NotFound();
@@ -131,10 +155,18 @@ namespace LetterboxNetCore.Controllers
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return NotFound("Movie doesn't exists");
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Not found",
+                    Detail = "Movie doesn't exists"
+                });
             bool isInWatchlist = await unitOfWork.MovieWatchlistRepository.MovieExistsInWatchlist(user.Id, movie.Id);
             if (isInWatchlist)
-                return BadRequest("Movie is already in watchlist");
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Bad request",
+                    Detail = "Movie is already in watchlist"
+                });
             var movieWatchlist = new MovieWatchlist();
             movieWatchlist.UserId = user.Id;
             movieWatchlist.MovieId = movie.Id;
@@ -150,7 +182,11 @@ namespace LetterboxNetCore.Controllers
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
             if (movie == null)
-                return NotFound("Movie doesn't exists");
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Not found",
+                    Detail = "Movie doesn't exists"
+                });
             var movieWatchlist = await unitOfWork.MovieWatchlistRepository.GetMovieFromUserByMovieId(user.Id, movie.Id);
             if (movieWatchlist == null)
                 return NotFound();
