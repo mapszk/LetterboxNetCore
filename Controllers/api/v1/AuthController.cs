@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using AutoMapper;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
@@ -16,21 +15,18 @@ namespace LetterboxNetCore.Controllers
     {
         private readonly UnitOfWork unitOfWork;
         private readonly UserManager<User> userManager;
-        private readonly IMapper mapper;
         private readonly IConfiguration configuration;
         private readonly SignInManager<User> signInManager;
 
         public AuthController(
             UnitOfWork unitOfWork,
             UserManager<User> userManager,
-            IMapper mapper,
             IConfiguration configuration,
             SignInManager<User> signInManager
         )
         {
             this.unitOfWork = unitOfWork;
             this.userManager = userManager;
-            this.mapper = mapper;
             this.configuration = configuration;
             this.signInManager = signInManager;
         }
@@ -41,7 +37,7 @@ namespace LetterboxNetCore.Controllers
             bool userNameExists = await unitOfWork.UserRepository.ExistsByEmailOrUsername(userRegisterDTO.UserName);
             if (userNameExists)
                 return BadRequest($"A user with username '{userRegisterDTO.UserName}' already exists");
-            var user = mapper.Map<User>(userRegisterDTO);
+            var user = new User(userRegisterDTO);
             var result = await unitOfWork.UserRepository.CreateUser(user, userRegisterDTO.Password);
             if (result.Succeeded)
                 return Ok();

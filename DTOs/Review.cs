@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LetterboxNetCore.Models;
 
 namespace LetterboxNetCore.DTOs
 {
@@ -16,5 +17,15 @@ namespace LetterboxNetCore.DTOs
         public string? Content { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public ReviewDTO(Review review)
+        {
+            this.Id = review.Id;
+            this.UserInfo = new UserReviewDTO(review.User);
+            this.MovieInfo = new MovieDTO(review.Movie);
+            this.Content = review.Content;
+            this.CreatedAt = review.CreatedAt;
+            this.UpdatedAt = review.UpdatedAt;
+        }
     }
 }

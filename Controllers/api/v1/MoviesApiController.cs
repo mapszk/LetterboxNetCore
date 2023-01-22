@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using AutoMapper;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
@@ -19,14 +18,12 @@ namespace LetterboxNetCore.Controllers
         private const int DefaultPageNumber = 0;
         private readonly UnitOfWork unitOfWork;
         private readonly UserManager<User> userManager;
-        private readonly IMapper mapper;
         private readonly IConfiguration configuration;
 
-        public MoviesApiController(UnitOfWork unitOfWork, UserManager<User> userManager, IMapper mapper, IConfiguration configuration)
+        public MoviesApiController(UnitOfWork unitOfWork, UserManager<User> userManager, IConfiguration configuration)
         {
             this.unitOfWork = unitOfWork;
             this.userManager = userManager;
-            this.mapper = mapper;
             this.configuration = configuration;
         }
 
@@ -36,7 +33,7 @@ namespace LetterboxNetCore.Controllers
             var movie = await unitOfWork.MoviesRepository.GetMovieDetailsBySlug(slug);
             if (movie == null)
                 return NotFound();
-            var mappedMovie = mapper.Map<MovieDetailsDTO>(movie);
+            var mappedMovie = new MovieDetailsDTO(movie);
             return Ok(mappedMovie);
         }
 
@@ -48,7 +45,11 @@ namespace LetterboxNetCore.Controllers
         )
         {
             var search = await unitOfWork.MoviesRepository.GetAllPaginated(name, pageNumber, pageSize);
-            var mappedMovies = mapper.Map<List<MovieDTO>>(search.Item1);
+            var mappedMovies = new List<MovieDTO>();
+            foreach (var movie in search.Item1)
+            {
+                mappedMovies.Add(new MovieDTO(movie));
+            }
             var result = new PaginationDTO<MovieDTO>
             (
                 mappedMovies,
@@ -66,12 +67,12 @@ namespace LetterboxNetCore.Controllers
                 return BadRequest("Movie doesn't exists");
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
-            var review = mapper.Map<Review>(createReviewDTO);
+            var review = new Review(createReviewDTO);
             review.UserId = user.Id;
             review.MovieId = movie.Id;
             unitOfWork.ReviewsRepository.Add(review);
             await unitOfWork.SaveAsync();
-            var mappedReview = mapper.Map<ReviewDTO>(review);
+            var mappedReview = new ReviewDTO(review);
             return Ok(mappedReview);
         }
 
@@ -84,7 +85,7 @@ namespace LetterboxNetCore.Controllers
             var review = await unitOfWork.ReviewsRepository.GetReviewDetails(reviewId);
             if (review == null)
                 return NotFound("Review doesn't exists");
-            var mappedReview = mapper.Map<ReviewDTO>(review);
+            var mappedReview = new ReviewDTO(review);
             return Ok(mappedReview);
         }
 

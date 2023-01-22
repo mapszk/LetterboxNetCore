@@ -1,4 +1,3 @@
-using AutoMapper;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
@@ -18,14 +17,12 @@ namespace LetterboxNetCore.Controllers
         private const int DefaultPageNumber = 0;
         private readonly UnitOfWork unitOfWork;
         private readonly UserManager<User> userManager;
-        private readonly IMapper mapper;
         private readonly IConfiguration configuration;
 
-        public ReviewsApiController(UnitOfWork unitOfWork, UserManager<User> userManager, IMapper mapper, IConfiguration configuration)
+        public ReviewsApiController(UnitOfWork unitOfWork, UserManager<User> userManager, IConfiguration configuration)
         {
             this.unitOfWork = unitOfWork;
             this.userManager = userManager;
-            this.mapper = mapper;
             this.configuration = configuration;
         }
 
@@ -41,7 +38,11 @@ namespace LetterboxNetCore.Controllers
             if (movie == null)
                 return NotFound("Movie doesn't exists");
             var search = await unitOfWork.ReviewsRepository.GetAllPaginated(movie.Id, content, pageSize, pageNumber);
-            var mappedReviews = mapper.Map<List<ReviewDTO>>(search.Item1);
+            var mappedReviews = new List<ReviewDTO>();
+            foreach (var review in search.Item1)
+            {
+                mappedReviews.Add(new ReviewDTO(review));
+            }
             var result = new PaginationDTO<ReviewDTO>
             (
                 mappedReviews,

@@ -1,4 +1,3 @@
-using AutoMapper;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
@@ -15,14 +14,12 @@ namespace LetterboxNetCore.Controllers
         private const int DefaultPageNumber = 0;
         private readonly UnitOfWork unitOfWork;
         private readonly UserManager<User> userManager;
-        private readonly IMapper mapper;
         private readonly IConfiguration configuration;
 
-        public MoviesController(UnitOfWork unitOfWork, UserManager<User> userManager, IMapper mapper, IConfiguration configuration)
+        public MoviesController(UnitOfWork unitOfWork, UserManager<User> userManager, IConfiguration configuration)
         {
             this.unitOfWork = unitOfWork;
             this.userManager = userManager;
-            this.mapper = mapper;
             this.configuration = configuration;
         }
 
@@ -32,7 +29,7 @@ namespace LetterboxNetCore.Controllers
             var movie = await unitOfWork.MoviesRepository.Get(id);
             if (movie == null)
                 return NotFound();
-            var mappedMovie = mapper.Map<MovieDTO>(movie);
+            var mappedMovie = new MovieDTO(movie);
             return Ok(mappedMovie);
         }
 
@@ -44,7 +41,11 @@ namespace LetterboxNetCore.Controllers
         )
         {
             var search = await unitOfWork.MoviesRepository.GetAllPaginated(name, pageNumber, pageSize);
-            var mappedMovies = mapper.Map<List<MovieDTO>>(search.Item1);
+            var mappedMovies = new List<MovieDTO>();
+            foreach (var movie in search.Item1)
+            {
+                mappedMovies.Add(new MovieDTO(movie));
+            }
             var result = new PaginationDTO<MovieDTO>
             (
                 mappedMovies,
@@ -57,11 +58,11 @@ namespace LetterboxNetCore.Controllers
         [HttpPost]
         public async Task<ActionResult<MovieDTO>> Create([FromBody] CreateMovieDTO createMovieDTO)
         {
-            var movie = mapper.Map<Movie>(createMovieDTO);
+            var movie = new Movie(createMovieDTO);
             movie.Slug = await GenerateSlugAsync(createMovieDTO.Name, createMovieDTO.ReleaseYear, createMovieDTO.Director);
             unitOfWork.MoviesRepository.Add(movie);
             await unitOfWork.SaveAsync();
-            var created = mapper.Map<MovieDTO>(movie);
+            var created = new MovieDTO(movie);
             return Ok(created);
         }
 
@@ -71,9 +72,9 @@ namespace LetterboxNetCore.Controllers
             var movie = await unitOfWork.MoviesRepository.Get(id);
             if (movie == null)
                 return NotFound();
-            mapper.Map(updateMovieDTO, movie);
+            movie.Update(updateMovieDTO);
             await unitOfWork.SaveAsync();
-            var updated = mapper.Map<MovieDTO>(movie);
+            var updated = new MovieDTO(movie);
             return Ok(updated);
         }
 

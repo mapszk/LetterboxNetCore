@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LetterboxNetCore.Models;
 
 namespace LetterboxNetCore.DTOs
 {
@@ -44,6 +45,19 @@ namespace LetterboxNetCore.DTOs
         public string? Director { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public MovieDTO(Movie movie)
+        {
+            this.Id = movie.Id;
+            this.Name = movie.Name;
+            this.ReleaseYear = movie.ReleaseYear;
+            this.Slug = movie.Slug;
+            this.Description = movie.Description;
+            this.Cover = movie.Cover;
+            this.Director = movie.Director;
+            this.CreatedAt = movie.CreatedAt;
+            this.UpdatedAt = movie.UpdatedAt;
+        }
     }
 
     public class MovieDetailsDTO : MovieDTO
@@ -51,5 +65,12 @@ namespace LetterboxNetCore.DTOs
         public int Likes { get; set; }
         public int Watchlist { get; set; }
         public int Reviews { get; set; }
+
+        public MovieDetailsDTO(Movie movie) : base(movie)
+        {
+            this.Likes = movie.Likes.Count();
+            this.Watchlist = movie.MovieWatchlist.Count();
+            this.Reviews = movie.Reviews.Count();
+        }
     }
 }
