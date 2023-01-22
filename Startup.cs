@@ -18,6 +18,16 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers();
+        services.AddCors(options =>
+        {
+            options.AddPolicy("corsapp", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+        });
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(configuration["DatabaseURL"]));
         services.AddIdentity<User, IdentityRole>(options =>
@@ -82,8 +92,8 @@ public class Startup
             app.UseSwaggerUI();
         }
 
+        app.UseCors("corsapp");
         app.UseHttpsRedirection();
-
         app.UseAuthorization();
         app.UseAuthentication();
         app.MapControllers();
