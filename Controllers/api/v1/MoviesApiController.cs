@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Claims;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
@@ -31,18 +32,13 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<MovieDetailsDTO>> GetById([FromRoute] string slug)
         {
             var movie = await unitOfWork.MoviesRepository.GetMovieDetailsBySlug(slug);
-            if (movie == null)
-                return NotFound();
+            if (movie == null) return NotFound();
             var mappedMovie = new MovieDetailsDTO(movie);
             return Ok(mappedMovie);
         }
 
         [HttpGet("get-all-paginated")]
-        public async Task<ActionResult<PaginationDTO<MovieDTO>>> GetAllPaginated(
-            [FromQuery] string? name,
-            [FromQuery] int pageSize = DefaultPageSize,
-            [FromQuery] int pageNumber = DefaultPageNumber
-        )
+        public async Task<ActionResult<PaginationDTO<MovieDTO>>> GetAllPaginated([FromQuery] string? name, [FromQuery] int pageSize = DefaultPageSize, [FromQuery] int pageNumber = DefaultPageNumber)
         {
             var search = await unitOfWork.MoviesRepository.GetAllPaginated(name, pageNumber, pageSize);
             var mappedMovies = new List<MovieDTO>();
@@ -63,12 +59,7 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<ReviewDTO>> CreateReview([FromRoute] string movieSlug, [FromBody] CreateReviewDTO createReviewDTO)
         {
             var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Bad request",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie doesn't exists", statusCode: (int)HttpStatusCode.BadRequest);
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             var review = new Review(createReviewDTO);
@@ -84,19 +75,9 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<ReviewDTO>> GetReviewById([FromRoute] string movieSlug, [FromRoute] int reviewId)
         {
             var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie doesn't exists", statusCode: (int)HttpStatusCode.NotFound);
             var review = await unitOfWork.ReviewsRepository.GetReviewDetails(reviewId);
-            if (review == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Review doesn't exists"
-                });
+            if (review == null) return Problem("Review doesn't exists", statusCode: (int)HttpStatusCode.NotFound);
             var mappedReview = new ReviewDTO(review);
             return Ok(mappedReview);
         }
@@ -107,19 +88,9 @@ namespace LetterboxNetCore.Controllers
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie is already liked", statusCode: (int)HttpStatusCode.NotFound);
             var likeExists = await unitOfWork.MovieLikesRepository.LikeExists(user.Id, movie.Id);
-            if (likeExists)
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Bad request",
-                    Detail = "Movie is already liked"
-                });
+            if (likeExists) return Problem("Movie is already liked", statusCode: (int)HttpStatusCode.BadRequest);
             var movieLike = new MovieLike();
             movieLike.UserId = user.Id;
             movieLike.MovieId = movie.Id;
@@ -134,15 +105,9 @@ namespace LetterboxNetCore.Controllers
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie doesn't exists", statusCode: (int)HttpStatusCode.NotFound);
             var movieLike = await unitOfWork.MovieLikesRepository.GetLikeFromUserByMovieId(user.Id, movie.Id);
-            if (movieLike == null)
-                return NotFound();
+            if (movieLike == null) return NotFound();
             unitOfWork.MovieLikesRepository.Delete(movieLike);
             await unitOfWork.SaveAsync();
             return Ok();
@@ -154,19 +119,9 @@ namespace LetterboxNetCore.Controllers
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie doesn't exists", statusCode: (int)HttpStatusCode.NotFound);
             bool isInWatchlist = await unitOfWork.MovieWatchlistRepository.MovieExistsInWatchlist(user.Id, movie.Id);
-            if (isInWatchlist)
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Bad request",
-                    Detail = "Movie is already in watchlist"
-                });
+            if (isInWatchlist) return Problem("Movie is already in watchlist", statusCode: (int)HttpStatusCode.BadRequest);
             var movieWatchlist = new MovieWatchlist();
             movieWatchlist.UserId = user.Id;
             movieWatchlist.MovieId = movie.Id;
@@ -181,15 +136,9 @@ namespace LetterboxNetCore.Controllers
             string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
             User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
             Movie movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie doesn't exists", statusCode: (int)HttpStatusCode.NotFound);
             var movieWatchlist = await unitOfWork.MovieWatchlistRepository.GetMovieFromUserByMovieId(user.Id, movie.Id);
-            if (movieWatchlist == null)
-                return NotFound();
+            if (movieWatchlist == null) return NotFound();
             unitOfWork.MovieWatchlistRepository.Delete(movieWatchlist);
             await unitOfWork.SaveAsync();
             return Ok();

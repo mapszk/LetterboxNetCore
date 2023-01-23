@@ -1,3 +1,4 @@
+using System.Net;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
@@ -27,18 +28,13 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<MovieDTO>> GetById([FromRoute] int id)
         {
             var movie = await unitOfWork.MoviesRepository.Get(id);
-            if (movie == null)
-                return NotFound();
+            if (movie == null) return NotFound();
             var mappedMovie = new MovieDTO(movie);
             return Ok(mappedMovie);
         }
 
         [HttpGet("get-all-paginated")]
-        public async Task<ActionResult<PaginationDTO<MovieDTO>>> GetAllPaginated(
-            [FromQuery] string? name,
-            [FromQuery] int pageSize = DefaultPageSize,
-            [FromQuery] int pageNumber = DefaultPageNumber
-        )
+        public async Task<ActionResult<PaginationDTO<MovieDTO>>> GetAllPaginated([FromQuery] string? name, [FromQuery] int pageSize = DefaultPageSize, [FromQuery] int pageNumber = DefaultPageNumber)
         {
             var search = await unitOfWork.MoviesRepository.GetAllPaginated(name, pageNumber, pageSize);
             var mappedMovies = new List<MovieDTO>();
@@ -70,14 +66,8 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<MovieDTO>> Update([FromRoute] int id, [FromBody] UpdateMovieDTO updateMovieDTO)
         {
             var movie = await unitOfWork.MoviesRepository.Get(id);
-            if (movie == null)
-                return NotFound();
-            if (movie.Id != id)
-                return BadRequest(new ProblemDetails
-                {
-                    Title = "Bad request",
-                    Detail = "Invalid movie id"
-                });
+            if (movie == null) return NotFound();
+            if (movie.Id != id) return Problem("Invalid movie id", statusCode: (int)HttpStatusCode.BadRequest);
             movie.Update(updateMovieDTO);
             await unitOfWork.SaveAsync();
             var updated = new MovieDTO(movie);
@@ -88,8 +78,7 @@ namespace LetterboxNetCore.Controllers
         public async Task<ActionResult<MovieDTO>> Delete([FromRoute] int id)
         {
             var movie = await unitOfWork.MoviesRepository.Get(id);
-            if (movie == null)
-                return NotFound();
+            if (movie == null) return NotFound();
             unitOfWork.MoviesRepository.Delete(movie);
             await unitOfWork.SaveAsync();
             return NoContent();
@@ -99,14 +88,11 @@ namespace LetterboxNetCore.Controllers
         {
             string generatedSlug = movieName.ToLower().Replace(" ", "-");
             bool exists = await SlugExists(generatedSlug);
-            if (!exists)
-                return generatedSlug;
+            if (!exists) return generatedSlug;
             generatedSlug = String.Concat(generatedSlug, $"-{Convert.ToString(releaseYear)}");
             exists = await SlugExists(generatedSlug);
-            if (!exists)
-                return generatedSlug;
-            else
-                return String.Concat(generatedSlug, $"-{director.ToLower().Replace(" ", "-")}");
+            if (!exists) return generatedSlug;
+            else return String.Concat(generatedSlug, $"-{director.ToLower().Replace(" ", "-")}");
         }
 
         private async Task<bool> SlugExists(string slug)

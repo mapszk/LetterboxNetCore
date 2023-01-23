@@ -1,3 +1,4 @@
+using System.Net;
 using LetterboxNetCore.DTOs;
 using LetterboxNetCore.Models;
 using LetterboxNetCore.Repositories.Database;
@@ -35,12 +36,7 @@ namespace LetterboxNetCore.Controllers
         )
         {
             var movie = await unitOfWork.MoviesRepository.GetBySlug(movieSlug);
-            if (movie == null)
-                return NotFound(new ProblemDetails
-                {
-                    Title = "Not found",
-                    Detail = "Movie doesn't exists"
-                });
+            if (movie == null) return Problem("Movie doesn't exists", statusCode: (int)HttpStatusCode.NotFound);
             var search = await unitOfWork.ReviewsRepository.GetAllPaginated(movie.Id, content, pageSize, pageNumber);
             var mappedReviews = new List<ReviewDTO>();
             foreach (var review in search.Item1)
