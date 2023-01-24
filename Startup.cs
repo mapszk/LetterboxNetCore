@@ -93,9 +93,12 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        if (env.IsProduction())
+        {
+            app.UseHttpsRedirection();
+        }
         app.UseProblemDetails();
         app.UseCors(CorsPolicy);
-        app.UseHttpsRedirection();
         app.UseAuthorization();
         app.UseAuthentication();
         app.MapControllers();
