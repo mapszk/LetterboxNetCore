@@ -34,6 +34,12 @@ namespace LetterboxNetCore.Controllers
             var movie = await unitOfWork.MoviesRepository.GetMovieDetailsBySlug(slug);
             if (movie == null) return NotFound();
             var mappedMovie = new MovieDetailsDTO(movie);
+            string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            User user = await unitOfWork.UserRepository.FindByEmailOrUsername(userEmail);
+            var isLiked = await unitOfWork.MovieLikesRepository.GetLikeFromUserByMovieId(user.Id, movie.Id) != null;
+            var isInWatchlist = await unitOfWork.MovieWatchlistRepository.GetMovieFromUserByMovieId(user.Id, movie.Id) != null;
+            mappedMovie.IsLiked = isLiked;
+            mappedMovie.IsInWatchlist = isInWatchlist;
             return Ok(mappedMovie);
         }
 

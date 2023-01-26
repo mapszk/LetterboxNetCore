@@ -22,11 +22,11 @@ namespace LetterboxNetCore.DTOs
 
     public class LoggedUser
     {
-        public string? Token { get; set; }
+        public string? AccessToken { get; set; }
 
         public LoggedUser(string token)
         {
-            this.Token = token;
+            this.AccessToken = token;
         }
     }
 }

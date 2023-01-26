@@ -11,7 +11,7 @@ namespace LetterboxNetCore.DTOs
         [Required(ErrorMessage = "Release year is required")]
         public int ReleaseYear { get; set; }
         [Required(ErrorMessage = "Description is required")]
-        [MaxLength(300, ErrorMessage = "Description max length is 300 characters")]
+        [MaxLength(500, ErrorMessage = "Description max length is 500 characters")]
         public string? Description { get; set; }
         [Required(ErrorMessage = "Cover is required")]
         public string? Cover { get; set; }
@@ -21,12 +21,12 @@ namespace LetterboxNetCore.DTOs
     public class UpdateMovieDTO
     {
         [Required(ErrorMessage = "Name is required")]
-        [MaxLength(50, ErrorMessage = "Description max length is 50 characters")]
+        [MaxLength(100, ErrorMessage = "Name max length is 100 characters")]
         public string? Name { get; set; }
         [Required(ErrorMessage = "Release year is required")]
         public int ReleaseYear { get; set; }
         [Required(ErrorMessage = "Description is required")]
-        [MaxLength(300, ErrorMessage = "Description max length is 300 characters")]
+        [MaxLength(500, ErrorMessage = "Description max length is 500 characters")]
         public string? Description { get; set; }
         [Required(ErrorMessage = "Cover is required")]
         public string? Cover { get; set; }
@@ -65,6 +65,8 @@ namespace LetterboxNetCore.DTOs
         public int Likes { get; set; }
         public int Watchlist { get; set; }
         public int Reviews { get; set; }
+        public bool IsLiked { get; set; }
+        public bool IsInWatchlist { get; set; }
 
         public MovieDetailsDTO(Movie movie) : base(movie)
         {
