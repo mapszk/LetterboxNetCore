@@ -35,7 +35,8 @@ namespace LetterboxNetCore.Repositories
         public async Task<(List<Movie>, int)> GetAllPaginated(string name, int pageNumber, int pageSize)
         {
             var search = context.Movies
-                .Where(m => String.IsNullOrEmpty(name) || m.Name.ToLower().Contains(name.ToLower()));
+                .Where(m => String.IsNullOrEmpty(name) || m.Name.ToLower().Contains(name.ToLower()))
+                .OrderByDescending(m => m.CreatedAt);
             var result = await search
                 .Skip(pageNumber * pageSize)
                 .Take(pageSize)

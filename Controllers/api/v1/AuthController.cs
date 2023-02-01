@@ -53,6 +53,7 @@ namespace LetterboxNetCore.Controllers
             {
                 string token = CreateToken(user);
                 var loggedUser = new LoggedUser(token);
+                Response.Cookies.Append("X-Access-Token", token, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.None, Secure = true });
                 return Ok(loggedUser);
             }
             else return Problem("Wrong password", statusCode: (int)HttpStatusCode.BadRequest);

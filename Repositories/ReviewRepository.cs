@@ -26,7 +26,8 @@ namespace LetterboxNetCore.Repositories
                 .Where(r => r.MovieId == movieId)
                 .Where(r => String.IsNullOrEmpty(content) || r.Content.ToLower().Contains(content.ToLower()))
                 .Include(r => r.User)
-                .Include(r => r.Movie);
+                .Include(r => r.Movie)
+                .OrderByDescending(r => r.CreatedAt);
             var result = await search
                 .Skip(pageNumber * pageSize)
                 .Take(pageSize)
