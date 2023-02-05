@@ -8,6 +8,7 @@ namespace LetterboxNetCore.Repositories.Database
     {
         private readonly ApplicationDbContext context;
         public UserRepository UserRepository { get; private set; }
+        public RefreshTokenRepository RefreshTokenRepository { get; private set; }
         public MovieRepository MoviesRepository { get; private set; }
         public ReviewRepository ReviewsRepository { get; private set; }
         public MovieLikeRepository MovieLikesRepository { get; private set; }
@@ -17,6 +18,7 @@ namespace LetterboxNetCore.Repositories.Database
         {
             this.context = context;
             this.UserRepository = new UserRepository(this.context, userManager);
+            this.RefreshTokenRepository = new RefreshTokenRepository(this.context);
             this.MoviesRepository = new MovieRepository(this.context);
             this.ReviewsRepository = new ReviewRepository(this.context);
             this.MovieLikesRepository = new MovieLikeRepository(this.context);

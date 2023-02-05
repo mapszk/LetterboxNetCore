@@ -32,5 +32,10 @@ namespace LetterboxNetCore.Repositories
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.UserName == emailOrUsername);
         }
+
+        public async Task<User?> Get(string userId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        }
     }
 }
