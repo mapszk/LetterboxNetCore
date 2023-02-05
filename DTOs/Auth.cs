@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LetterboxNetCore.Models;
 
 namespace LetterboxNetCore.DTOs
 {
@@ -23,10 +24,14 @@ namespace LetterboxNetCore.DTOs
     public class LoggedUser
     {
         public string? AccessToken { get; set; }
+        public string? RefreshToken { get; set; }
+        public UserDTO User { get; set; }
 
-        public LoggedUser(string token)
+        public LoggedUser(string accessToken, string refreshToken, User user)
         {
-            this.AccessToken = token;
+            this.AccessToken = accessToken;
+            this.RefreshToken = refreshToken;
+            this.User = new UserDTO(user);
         }
     }
 }
